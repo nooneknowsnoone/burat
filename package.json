@@ -1,12 +1,26 @@
 {
-  "name": "certificate-generator-api",
+  "name": "lyrics-search-api",
   "version": "1.0.0",
+  "description": "Simple Lyrics Search API using Node.js and Express",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
+  "keywords": [
+    "lyrics",
+    "api",
+    "nodejs",
+    "express"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
   "dependencies": {
-    "canvas": "^2.11.2",
+    "axios": "^1.6.0",
+    "cors": "^2.8.5",
     "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
   }
 }
