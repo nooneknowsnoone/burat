@@ -6,63 +6,67 @@ const app = express();
 const PORT = 3000;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.static('public'));
 
 /**
- * 🎵 Search songs
- * Example: /api/search?q=eminem
+ * 🔌 API RESPONSE (JSON)
  */
-app.get('/api/search', async (req, res) => {
-  const query = req.query.q;
+app.get('/api/weather', async (req, res) => {
+  const city = req.query.city;
 
-  if (!query) {
-    return res.status(400).json({ error: 'Search query is required' });
+  if (!city) {
+    return res.status(400).json({
+      success: false,
+      message: 'City is required'
+    });
   }
 
   try {
-    const response = await axios.get(`https://api.lyrics.ovh/suggest/${query}`);
-    res.json(response.data);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to search songs' });
-  }
-});
-
-/**
- * 🎤 Get lyrics
- * Example: /api/lyrics?artist=Eminem&title=Lose Yourself
- */
-app.get('/api/lyrics', async (req, res) => {
-  const { artist, title } = req.query;
-
-  if (!artist || !title) {
-    return res.status(400).json({ error: 'Artist and title are required' });
-  }
-
-  try {
-    const response = await axios.get(
-      `https://api.lyrics.ovh/v1/${artist}/${title}`
+    // Get coordinates
+    const geo = await axios.get(
+      `https://geocoding-api.open-meteo.com/v1/search?name=${city}`
     );
 
+    if (!geo.data.results) {
+      return res.status(404).json({
+        success: false,
+        message: 'City not found'
+      });
+    }
+
+    const { latitude, longitude, name, country } = geo.data.results[0];
+
+    // Get weather
+    const weather = await axios.get(
+      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`
+    );
+
+    // 🔌 API RESPONSE
     res.json({
-      artist,
-      title,
-      lyrics: response.data.lyrics
+      success: true,
+      data: {
+        city: name,
+        country: country,
+        temperature: weather.data.current_weather.temperature,
+        windspeed: weather.data.current_weather.windspeed
+      }
     });
-  } catch (error) {
-    res.status(500).json({ error: 'Lyrics not found' });
+
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch weather'
+    });
   }
 });
 
 /**
- * 🏠 Root route
+ * 🌐 FRONTEND
  */
 app.get('/', (req, res) => {
-  res.send('🎶 Lyrics API is running...');
+  res.sendFile(__dirname + '/public/index.html');
 });
 
-/**
- * 🚀 Start server
- */
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running at http://localhost:${PORT}`);
 });
