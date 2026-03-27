@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Weather App</title>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      margin-top: 50px;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+    }
+    #result {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🌤️ Weather App</h1>
+
+  <input type="text" id="city" placeholder="Enter city">
+  <button onclick="getWeather()">Search</button>
+
+  <div id="result"></div>
+
+  <script>
+    async function getWeather() {
+      const city = document.getElementById('city').value;
+
+      document.getElementById('result').innerHTML = "Loading...";
+
+      const res = await fetch(`/api/weather?city=${city}`);
+      const data = await res.json();
+
+      // 🌐 FRONTEND RESPONSE
+      if (!data.success) {
+        document.getElementById('result').innerHTML = data.message;
+        return;
+      }
+
+      const weather = data.data;
+
+      document.getElementById('result').innerHTML = `
+        <h2>${weather.city}, ${weather.country}</h2>
+        <p>🌡️ Temperature: ${weather.temperature}°C</p>
+        <p>💨 Wind Speed: ${weather.windspeed} km/h</p>
+      `;
+    }
+  </script>
+
+</body>
+</html>
